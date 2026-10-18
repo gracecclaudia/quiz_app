@@ -1,11 +1,18 @@
-class Question {
-  final String text;
-  final List<String> options;
-  final int correctOptionIndex;
+import 'package:flutter/material.dart';
 
-  Question({
-    required this.text,
-    required this.options,
-    required this.correctOptionIndex,
-  });
+class QuizScreen extends StatelessWidget {
+  const QuizScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Halaman Kuis'),
+        backgroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Soal-soal kuis akan muncul di sini nanti!'),
+      ),
+    );
+  }
 }
