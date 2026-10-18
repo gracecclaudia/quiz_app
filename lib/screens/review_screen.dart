@@ -8,136 +8,148 @@ class ReviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<QuizProvider>(context, listen: false);
+    final provider = Provider.of<QuizProvider>(context);
     final questions = provider.questions;
     final selectedAnswers = provider.selectedAnswers;
+    final isDark = provider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFFAFAFA),
       appBar: AppBar(
-        backgroundColor: AppTheme.lightPink,
+        backgroundColor: isDark ? const Color(0xFF1E1E1E) : AppTheme.lightPink,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Review Answers',
-          style: TextStyle(color: AppTheme.darkGreen, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontFamily: 'MountainsOfChristmas',
+            fontSize: 32,
+            color: isDark ? Colors.white : AppTheme.darkGreen,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
-        iconTheme: const IconThemeData(color: AppTheme.darkGreen),
+        iconTheme: IconThemeData(color: isDark ? Colors.white : AppTheme.darkGreen),
       ),
-      // menggunakan SafeArea dan menonaktifkan properti yang membatasi scroll
       body: SafeArea(
-        child: ListView.builder(
-          physics: const BouncingScrollPhysics(), // efek pantulan scroll
-          padding: const EdgeInsets.all(20),
-          itemCount: questions.length,
-          itemBuilder: (context, index) {
-            final question = questions[index];
-            final userAnswerIndex = selectedAnswers[index];
+        child: Center(
+          // pembatas lebar agar tampilan review tetap rapi di web/laptop
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 750),
+            child: ListView.builder(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              itemCount: questions.length,
+              itemBuilder: (context, index) {
+                final question = questions[index];
+                final userAnswerIndex = selectedAnswers[index];
 
-            final isCorrect = userAnswerIndex == question.correctOptionIndex;
-            final isUnanswered = userAnswerIndex == null;
+                final isCorrect = userAnswerIndex == question.correctOptionIndex;
+                final isUnanswered = userAnswerIndex == null;
 
-            return Card(
-              margin: const EdgeInsets.only(bottom: 20),
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-                side: BorderSide(color: AppTheme.lightPink.withOpacity(0.5)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // teks soal
-                    Text(
-                      'Q${index + 1}: ${question.text}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.darkGreen),
-                    ),
-                    const Divider(height: 25, color: AppTheme.lightPink),
-
-                    // jawaban user
-                    Row(
+                return Card(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    side: BorderSide(color: isDark ? Colors.white24 : AppTheme.lightPink.withValues(alpha: 0.5)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          isCorrect ? Icons.check_circle : Icons.cancel,
-                          color: isCorrect ? AppTheme.lightGreen : Colors.red.shade400,
-                          size: 20,
+                        Text(
+                          'Q${index + 1}: ${question.text}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: isDark ? Colors.white : AppTheme.darkGreen,
+                          ),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Your Answer: ${isUnanswered ? "Not Answered" : question.options[userAnswerIndex]}',
-                            style: TextStyle(
+                        const Divider(height: 25, color: AppTheme.lightPink),
+
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              isCorrect ? Icons.check_circle : Icons.cancel,
                               color: isCorrect ? AppTheme.lightGreen : Colors.red.shade400,
-                              fontWeight: FontWeight.bold,
+                              size: 20,
                             ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Your Answer: ${isUnanswered ? "Not Answered" : question.options[userAnswerIndex]}',
+                                style: TextStyle(
+                                  color: isCorrect ? AppTheme.lightGreen : Colors.red.shade400,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        if (!isCorrect) ...[
+                          const SizedBox(height: 10),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.check_circle_outline, color: isDark ? AppTheme.lightGreen : AppTheme.darkGreen, size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Correct Answer: ${question.options[question.correctOptionIndex]}',
+                                  style: TextStyle(
+                                    color: isDark ? AppTheme.lightGreen : AppTheme.darkGreen,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+
+                        const SizedBox(height: 15),
+
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF2C2C2C) : AppTheme.lightPink.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppTheme.lightPink.withValues(alpha: 0.5)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.lightbulb_outline,
+                                color: AppTheme.lightGreen,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Explanation: ${question.explanation}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: isDark ? Colors.white70 : AppTheme.darkGreen,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-
-                    // jawaban benar (jika user salah)
-                    if (!isCorrect) ...[
-                      const SizedBox(height: 10),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.check_circle_outline, color: AppTheme.darkGreen, size: 20),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Correct Answer: ${question.options[question.correctOptionIndex]}',
-                              style: const TextStyle(
-                                color: AppTheme.darkGreen,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-
-                    const SizedBox(height: 15),
-
-                    // kotak explanation
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightPink.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.lightPink),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.lightbulb_outline,
-                            color: AppTheme.darkGreen,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Explanation: ${question.explanation}',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.darkGreen,
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/question.dart';
 import '../data/dummy_data.dart';
 
@@ -8,13 +9,24 @@ class QuizProvider with ChangeNotifier {
   int _score = 0;
   bool _isQuizFinished = false;
 
+  // state settings
+  bool _isDarkMode = false;
+  bool _soundEnabled = true;
+  bool _hapticEnabled = true;
+  double _fontSizeMultiplier = 1.0; // 1.0 = normal, 1.15 = large, 1.3 = extra
+  int _totalQuestionsAnsweredAllTime = 0;
+
+  bool get isDarkMode => _isDarkMode;
+  bool get soundEnabled => _soundEnabled;
+  bool get hapticEnabled => _hapticEnabled;
+  double get fontSizeMultiplier => _fontSizeMultiplier;
+  int get totalQuestionsAnsweredAllTime => _totalQuestionsAnsweredAllTime;
+
   String _selectedCategory = "Kriptografi";
   String _selectedDifficulty = "Campuran";
   List<Question> _filteredQuestions = [];
 
   final Map<int, int> _selectedAnswers = {};
-
-  // menyimpan jumlah percobaan kuis berdasarkan nama user
   final Map<String, int> _userAttempts = {};
 
   String get userName => _userName;
@@ -23,8 +35,6 @@ class QuizProvider with ChangeNotifier {
   bool get isQuizFinished => _isQuizFinished;
   List<Question> get questions => _filteredQuestions;
   Map<int, int> get selectedAnswers => _selectedAnswers;
-
-  // mengambil jumlah percobaan untuk user yang sedang aktif
   int get currentUserAttempt => _userAttempts[_userName] ?? 0;
 
   void setUserName(String name) {
@@ -32,7 +42,35 @@ class QuizProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // fungsi untuk menghapus data user saat logout/ganti Pengguna
+  void toggleTheme() {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+  }
+
+  void toggleSound(bool value) {
+    _soundEnabled = value;
+    notifyListeners();
+  }
+
+  void toggleHaptic(bool value) {
+    _hapticEnabled = value;
+    if (value) HapticFeedback.lightImpact();
+    notifyListeners();
+  }
+
+  void setFontSizeMultiplier(double multiplier) {
+    _fontSizeMultiplier = multiplier;
+    notifyListeners();
+  }
+
+  // fungsi reset riwayat Kuis dengan pesan sukses
+  String resetAllHistory() {
+    _userAttempts.clear();
+    _totalQuestionsAnsweredAllTime = 0;
+    notifyListeners();
+    return "Success: All quiz history and statistics have been reset.";
+  }
+
   void clearUser() {
     _userName = '';
     notifyListeners();
@@ -42,37 +80,24 @@ class QuizProvider with ChangeNotifier {
     _selectedCategory = category;
     _selectedDifficulty = difficulty;
 
-    // ambil semua soal dari kategori yang dipilih
     var primaryQuestions = dummyQuestions.where((q) => q.category == category).toList();
-
-    // filter berdasarkan tingkat kesulitan
     if (difficulty != "Campuran") {
       primaryQuestions = primaryQuestions.where((q) => q.difficulty == difficulty).toList();
     }
-
-    // ccak urutan soal utama
     primaryQuestions.shuffle();
 
-    // cek apakah soal utama mencukupi jumlah yang diminta
     if (primaryQuestions.length >= count) {
       _filteredQuestions = primaryQuestions.sublist(0, count);
     } else {
-      // jika tidak cukup, masukkan semua soal utama lalu tambahkan soal cadangan
       _filteredQuestions = List.from(primaryQuestions);
       int shortage = count - primaryQuestions.length;
-
-      var backupQuestions = dummyQuestions.where((q) {
-        return !primaryQuestions.contains(q);
-      }).toList();
-
+      var backupQuestions = dummyQuestions.where((q) => !primaryQuestions.contains(q)).toList();
       backupQuestions.shuffle();
-
       for (int i = 0; i < shortage && i < backupQuestions.length; i++) {
         _filteredQuestions.add(backupQuestions[i]);
       }
     }
 
-    // reset status navigasi dan skor kuis
     _currentQuestionIndex = 0;
     _score = 0;
     _isQuizFinished = false;
@@ -82,12 +107,16 @@ class QuizProvider with ChangeNotifier {
 
   void selectAnswer(int selectedIndex) {
     _selectedAnswers[_currentQuestionIndex] = selectedIndex;
+    if (_hapticEnabled) {
+      HapticFeedback.selectionClick();
+    }
     notifyListeners();
   }
 
   void nextQuestion() {
     if (_currentQuestionIndex < _filteredQuestions.length - 1) {
       _currentQuestionIndex++;
+      if (_hapticEnabled) HapticFeedback.selectionClick();
       notifyListeners();
     }
   }
@@ -95,6 +124,7 @@ class QuizProvider with ChangeNotifier {
   void previousQuestion() {
     if (_currentQuestionIndex > 0) {
       _currentQuestionIndex--;
+      if (_hapticEnabled) HapticFeedback.selectionClick();
       notifyListeners();
     }
   }
@@ -109,6 +139,7 @@ class QuizProvider with ChangeNotifier {
       }
     }
     _isQuizFinished = true;
+    _totalQuestionsAnsweredAllTime += _filteredQuestions.length;
 
     if (_userName.isNotEmpty) {
       _userAttempts[_userName] = (_userAttempts[_userName] ?? 0) + 1;

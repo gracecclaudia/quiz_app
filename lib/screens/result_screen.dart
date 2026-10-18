@@ -11,11 +11,12 @@ class ResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final quizProvider = Provider.of<QuizProvider>(context, listen: false);
+    final quizProvider = Provider.of<QuizProvider>(context);
     final score = quizProvider.score;
     final totalQuestions = quizProvider.questions.length;
     final percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
     final attemptCount = quizProvider.currentUserAttempt;
+    final isDark = quizProvider.isDarkMode;
 
     String message;
     if (percentage >= 80) {
@@ -27,22 +28,45 @@ class ResultScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.lightPink,
+      backgroundColor: isDark ? const Color(0xFF121212) : AppTheme.lightPink,
+      // app bar dgn tombol close
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.close_rounded,
+              color: isDark ? Colors.white : AppTheme.darkGreen,
+              size: 30,
+            ),
+            tooltip: 'Back to Home',
+            onPressed: () {
+              // reset kuis dan kembali ke halaman preparation (home)
+              quizProvider.resetQuiz();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const PreparationScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 15),
+        ],
+      ),
       body: SafeArea(
         child: Center(
-          // SingleChildScrollView agar layar bisa discroll
-          // jika layar HP user ukurannya kecil
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               child: Container(
                 padding: const EdgeInsets.all(30),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryPink.withOpacity(0.3),
+                      color: AppTheme.primaryPink.withValues(alpha: isDark ? 0.0 : 0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -60,7 +84,7 @@ class ResultScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppTheme.lightPink.withOpacity(0.5),
+                        color: AppTheme.lightPink.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -68,7 +92,7 @@ class ResultScreen extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.darkGreen,
+                          color: AppTheme.lightGreen,
                         ),
                       ),
                     ),
@@ -76,10 +100,10 @@ class ResultScreen extends StatelessWidget {
                     Text(
                       '$message\n${quizProvider.userName}!',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.darkGreen,
+                        color: isDark ? Colors.white : AppTheme.darkGreen,
                       ),
                     ),
                     const SizedBox(height: 25),
@@ -103,6 +127,7 @@ class ResultScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 30),
 
+                    // tombol play again
                     PrimaryButton(
                       text: 'Play Again',
                       onPressed: () {
@@ -115,6 +140,7 @@ class ResultScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
 
+                    // tombol review
                     TextButton(
                       onPressed: () {
                         Navigator.push(

@@ -12,6 +12,11 @@ class AppTheme {
     primaryColor: primaryPink,
     cardColor: Colors.white,
     fontFamily: 'Poppins',
+    appBarTheme: const AppBarTheme(
+      backgroundColor: lightPink,
+      foregroundColor: darkGreen,
+      elevation: 0,
+    ),
     textTheme: const TextTheme(
       bodyLarge: TextStyle(color: darkGreen),
       bodyMedium: TextStyle(color: darkGreen),
@@ -23,42 +28,29 @@ class AppTheme {
       surface: Colors.white,
       tertiary: lightPink,
     ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: darkGreen,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    ),
   );
 
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: const Color(0xFF1E1E1E),
+    scaffoldBackgroundColor: const Color(0xFF121212),
     primaryColor: primaryPink,
-    cardColor: const Color(0xFF2C2C2C),
+    cardColor: const Color(0xFF1E1E1E),
     fontFamily: 'Poppins',
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF1E1E1E),
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
     textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: lightPink),
-      bodyMedium: TextStyle(color: lightPink),
+      bodyLarge: TextStyle(color: Colors.white),
+      bodyMedium: TextStyle(color: Colors.white70),
       displayLarge: TextStyle(color: Colors.white),
     ),
     colorScheme: const ColorScheme.dark(
       primary: primaryPink,
       secondary: lightGreen,
-      surface: Color(0xFF2C2C2C),
+      surface: Color(0xFF1E1E1E),
       tertiary: darkGreen,
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primaryPink,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
     ),
   );
 }

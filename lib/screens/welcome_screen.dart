@@ -4,7 +4,7 @@ import '../providers/quiz_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/custom_text_field.dart';
-import 'preparation_screen.dart'; // <-- Ubah import ini ke preparation_screen
+import 'preparation_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -38,7 +38,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void _startQuiz() {
     final name = _nameController.text.trim();
 
-    // Validasi keamanan tambahan (meski tombol sudah disable jika kosong)
+    // validasi keamanan tambahan (meski tombol sudah disable jika kosong)
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -49,10 +49,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       return;
     }
 
-    // Simpan nama ke provider
+    // simpan nama ke provider
     Provider.of<QuizProvider>(context, listen: false).setUserName(name);
 
-    // Navigasi Pindah ke PreparationScreen (BUKAN langsung ke QuizScreen)
+    // navigasi Pindah ke PreparationScreen
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const PreparationScreen()),
