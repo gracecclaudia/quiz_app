@@ -4,7 +4,7 @@ import '../providers/quiz_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/custom_text_field.dart';
-import 'quiz_screen.dart';
+import 'preparation_screen.dart'; // <-- Ubah import ini ke preparation_screen
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -37,11 +37,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   void _startQuiz() {
     final name = _nameController.text.trim();
+
+    // Validasi keamanan tambahan (meski tombol sudah disable jika kosong)
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your name first! 🌸'),
+          backgroundColor: AppTheme.primaryPink,
+        ),
+      );
+      return;
+    }
+
+    // Simpan nama ke provider
     Provider.of<QuizProvider>(context, listen: false).setUserName(name);
 
+    // Navigasi Pindah ke PreparationScreen (BUKAN langsung ke QuizScreen)
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const QuizScreen()),
+      MaterialPageRoute(builder: (context) => const PreparationScreen()),
     );
   }
 
@@ -117,7 +131,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                       PrimaryButton(
                         text: 'Start Quiz',
-                        // jika _isNameFilled false, tombol jadi abu
+                        // jika _isNameFilled false, tombol otomatis menjadi mati (abu-abu)
                         onPressed: _isNameFilled ? _startQuiz : null,
                       ),
                     ],
