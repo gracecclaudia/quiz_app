@@ -9,33 +9,63 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
+
+    // durasi animasi bunganya mekar (0.8 detik)
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    // animasi bunga membesar (menutupi layar)
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 50.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+    );
+
+    // animasi memudarkan teks "Quiz Time!" dan loading
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
     _startAnimationSequence();
   }
 
   void _startAnimationSequence() async {
-    // splash screen 2.5 detik
-    await Future.delayed(const Duration(milliseconds: 2500));
-
+    // tahan di layar splash statis selama 2 detik
+    await Future.delayed(const Duration(milliseconds: 2000));
     if (!mounted) return;
 
-    // transisi splash
+    // mulai animasi bunga mekar menutupi layar
+    await _controller.forward();
+    if (!mounted) return;
+
+    // metelah layar tertutup hijau (bunga mekar), pindah ke WelcomeScreen
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const TransitionScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) => const WelcomeScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
             child: child,
           );
         },
-        transitionDuration: const Duration(milliseconds: 500), // fade in ke layar yg hijau
+        transitionDuration: const Duration(milliseconds: 1200), // Transisi sangat smooth
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -46,70 +76,67 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.local_florist,
-              size: 100,
-              color: AppTheme.lightGreen,
+            // animasi bunga mekar
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // lingkaran hijau di belakang bunga
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: _controller.value > 0.05
+                              ? AppTheme.lightGreen
+                              : Colors.transparent,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      // bunga florist
+                      Icon(
+                        Icons.local_florist,
+                        size: 100,
+                        color: _controller.value > 0.05
+                            ? Colors.white.withValues(alpha: 0.3)
+                            : AppTheme.lightGreen,
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: 20),
-            // font mountains of christmas
-            const Text(
-              'Quiz Time!',
-              style: TextStyle(
-                fontFamily: 'MountainsOfChristmas',
-                fontSize: 56,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.lightGreen,
-                letterSpacing: 2,
+
+            const SizedBox(height: 20), // Jarak antara bunga dan teks
+
+            // teks dan loading
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  const Text(
+                    'Quiz Time!',
+                    style: TextStyle(
+                      fontFamily: 'MountainsOfChristmas',
+                      fontSize: 56,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.lightGreen,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.lightGreen),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 30),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.lightGreen),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-// widget untuk layar kosong transisi
-class TransitionScreen extends StatefulWidget {
-  const TransitionScreen({super.key});
-
-  @override
-  State<TransitionScreen> createState() => _TransitionScreenState();
-}
-
-class _TransitionScreenState extends State<TransitionScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // setelah 0.6 detik di layar hijau, pindah ke welcome wcreen
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const WelcomeScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 600), // fade in ke welcome screen
-        ),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // layar transisi
-    return const Scaffold(
-      backgroundColor: AppTheme.lightGreen,
     );
   }
 }
